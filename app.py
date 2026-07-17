@@ -190,7 +190,7 @@ if st.session_state.carrello:
             st.session_state.carrello = []
             st.rerun()
             
-    # GENERATORE PDF
+    # GENERATORE PDF CORRETTO (SENZA CARATTERI SPECIALI CHE MANDANO IN CRASH)
     def genera_pdf(carrello, totale):
         pdf = FPDF()
         pdf.add_page()
@@ -203,30 +203,37 @@ if st.session_state.carrello:
         pdf.cell(190, 15, "PATERNO DANIEL SRL - MODULO ORDINE", ln=True, align="C")
         pdf.ln(15)
         
-        pdf.set_font("Arial", "", 10)
+        pdf.set_font("Arial", "B", 10)
         pdf.set_fill_color(50, 50, 50)
         pdf.set_text_color(255, 255, 255)
         pdf.cell(30, 8, "Codice", border=1, fill=True)
-        pdf.cell(90, 8, "Descrizione", border=1, fill=True)
-        pdf.cell(20, 8, "Q.ta", border=1, fill=True, align="C")
-        pdf.cell(25, 8, "Listino", border=1, fill=True, align="R")
+        pdf.cell(95, 8, "Descrizione", border=1, fill=True)
+        pdf.cell(15, 8, "Q.ta", border=1, fill=True, align="C")
+        pdf.cell(25, 8, "Listino (cad)", border=1, fill=True, align="R")
         pdf.cell(25, 8, "Totale", border=1, fill=True, ln=True, align="R")
         
+        pdf.set_font("Arial", "", 10)
         pdf.set_text_color(0, 0, 0)
         for item in carrello:
-            desc = item['Descrizione'][:45]
+            # Puliamo la descrizione tagliandola se troppo lunga
+            desc = str(item['Descrizione'])[:45]
+            # Estraggo solo il numero del prezzo senza il simbolo €
+            prezzo_singolo = str(item['Prezzo Listino']).split(" ")[0]
+            
             pdf.cell(30, 8, str(item['Codice']), border=1)
-            pdf.cell(90, 8, desc, border=1)
-            pdf.cell(20, 8, str(item['Quantità']), border=1, align="C")
-            pdf.cell(25, 8, str(item['Prezzo Listino'].split(" / ")[0]), border=1, align="R")
-            pdf.cell(25, 8, f"{item['Totale (€)']:.2f} €", border=1, align="R", ln=True)
+            pdf.cell(95, 8, desc, border=1)
+            pdf.cell(15, 8, str(item['Quantità']), border=1, align="C")
+            pdf.cell(25, 8, f"{prezzo_singolo} EUR", border=1, align="R")
+            pdf.cell(25, 8, f"{item['Totale (EUR)'] if 'Totale (EUR)' in item else item['Totale (ê)'] if 'Totale (ê)' in item else item.get('Totale (€)', 0):.2f} EUR", border=1, align="R", ln=True)
             
         pdf.ln(5)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(140, 10, "", border=0)
         pdf.set_fill_color(230, 230, 230)
-        pdf.cell(50, 10, f"Totale: {totale:.2f} €", border=1, align="C", ln=True, fill=True)
-        return pdf.output(dest="S").encode("latin1")
+        pdf.cell(50, 10, f"Totale: {totale:.2f} EUR", border=1, align="C", ln=True, fill=True)
+        
+        # Usiamo l'encoding corretto per l'output di testo
+        return pdf.output(dest="S").encode('latin1', errors='replace')
 
     with col_pdf:
         try:
