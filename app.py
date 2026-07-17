@@ -6,7 +6,7 @@ import os
 import re
 
 # 1. CONFIGURAZIONE PAGINA
-st.set_page_config(page_title="Paterno Daniel SRL - Würth Listino", page_icon="📦", layout="centered")
+st.set_page_config(page_title="Paterno Daniel SRL - Würth Listino", page_icon="wurth-logo-8.png", layout="centered")
 
 # Nomi dei file delle immagini nella tua cartella
 bg_filename = "Carpenteria-in-legno-Würth-costruzioni-in-legno.jpg"
