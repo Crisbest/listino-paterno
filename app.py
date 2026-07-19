@@ -149,14 +149,14 @@ if search_query:
             st.caption(f"*(Nomi commerciali associati: {prodotto['Parole Chiave']})*")
             
         st.write(f"**Prezzo di listino:** {prodotto['Prezzo (€)']} € ({prodotto['Unità Prezzo']})")
-
-# Estrae il valore minimo dal foglio o usa 1 come valore predefinito di sicurezza
-q_minima = int(prodotto['Quantità Minima']) if 'Quantità Minima' in prodotto and pd.notna(prodotto['Quantità Minima']) else 1
-
-st.warning(f"⚠️ **Quantità minima ordinabile per questo articolo:** {q_minima} pezzi")
-
-# Imposta il min_value e il valore iniziale (value) pari alla quantità minima
-quantita = st.number_input("Inserisci la quantità (pezzi singoli):", min_value=q_minima, value=q_minima, step=1)
+        
+        # Recupera la quantità minima dalla nuova colonna (usa 1 come fallback se vuota)
+        q_minima = int(prodotto['Quantità Minima']) if 'Quantità Minima' in prodotto and pd.notna(prodotto['Quantità Minima']) else 1
+        
+        st.warning(f"⚠️ **Quantità minima ordinabile per questo articolo:** {q_minima} pezzi")
+        
+        # Imposta min_value e valore di partenza pari alla quantità minima
+        quantita = st.number_input("Inserisci la quantità (pezzi singoli):", min_value=q_minima, value=q_minima, step=1)
         
         is_per_100 = "100" in str(prodotto['Unità Prezzo'])
         if is_per_100:
