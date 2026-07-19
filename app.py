@@ -150,20 +150,24 @@ if search_query:
             
         st.write(f"**Prezzo di listino:** {prodotto['Prezzo (€)']} € ({prodotto['Unità Prezzo']})")
         
-        # Recupera la quantità minima dalla nuova colonna (usa 1 come fallback se vuota)
+        # Recupera la quantità minima per confezione (usa 1 se vuota)
         q_minima = int(prodotto['Quantità Minima']) if 'Quantità Minima' in prodotto and pd.notna(prodotto['Quantità Minima']) else 1
         
-        st.warning(f"⚠️ **Quantità minima ordinabile per questo articolo:** {q_minima} pezzi")
+        st.warning(f"📦 **Confezionamento:** Questo articolo viene venduto solo in confezioni da **{q_minima} pezzi**.")
         
-        # Imposta min_value e valore di partenza pari alla quantità minima
-        quantita = st.number_input("Inserisci la quantità (pezzi singoli):", min_value=q_minima, value=q_minima, step=1)
+        # L'utente seleziona quante confezioni desidera
+        confezioni = st.number_input("Inserisci il numero di confezioni da ordinare:", min_value=1, value=1, step=1)
+        
+        # Calcolo automatico dei pezzi singoli effettivi
+        quantita_effettiva = confezioni * q_minima
+        st.info(f"🔢 **Quantità totale che verrà ordinata:** {quantita_effettiva} pezzi singoli")
         
         is_per_100 = "100" in str(prodotto['Unità Prezzo'])
         if is_per_100:
-            prezzo_totale = (prodotto['Prezzo (€)'] / 100) * quantita
+            prezzo_totale = (prodotto['Prezzo (€)'] / 100) * quantita_effettiva
             st.success(f"💰 **Prezzo Totale:** {prezzo_totale:.2f} € *(Calcolato su base 100 pz)*")
         else:
-            prezzo_totale = prodotto['Prezzo (€)'] * quantita
+            prezzo_totale = prodotto['Prezzo (€)'] * quantita_effettiva
             st.success(f"💰 **Prezzo Totale:** {prezzo_totale:.2f} €")
             
         if st.button("🛒 Aggiungi all'ordine"):
@@ -171,7 +175,7 @@ if search_query:
                 "Codice": prodotto['Codice Articolo'],
                 "Descrizione": prodotto['Descrizione'],
                 "Prezzo Listino": f"{prodotto['Prezzo (€)']} € / {prodotto['Unità Prezzo']}",
-                "Quantità": quantita,
+                "Quantità": quantita_effettiva,
                 "Totale (€)": round(prezzo_totale, 2)
             })
             st.toast("Aggiunto al riepilogo!")
