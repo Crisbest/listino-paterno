@@ -70,24 +70,39 @@ css_code += """
         border-radius: 8px;
     }
     
-    /* FIX PER LA BARRA DI RICERCA: CORNICE ROSSA SEMPRE VISIBILE E SFONDO BIANCO */
-    div[data-baseweb="input"], 
-    div[data-baseweb="input"] > div {
+    /* -------------------------------------------------------------
+       FORCE COMPLETO BARRA DI RICERCA: SFONDO BIANCO E BORDO ROSSO
+       ------------------------------------------------------------- */
+    
+    /* Seleziona l'intero blocco del campo testo */
+    .stTextInput div[data-baseweb="input"],
+    .stTextInput div[data-baseweb="base-input"],
+    .stTextInput input {
         background-color: #ffffff !important;
-        border-color: #cc0000 !important;
-        border-width: 2.5px !important;
-        border-style: solid !important;
-        border-radius: 10px !important;
-        box-shadow: 0px 4px 12px rgba(204, 0, 0, 0.25) !important; /* Ombra leggera rossa per massima visibilità */
+        background: #ffffff !important;
+        color: #000000 !important;
     }
 
-    div[data-baseweb="input"] input {
+    /* Bordo rosso spesso e ben visibile */
+    .stTextInput div[data-baseweb="input"] {
+        border: 3px solid #cc0000 !important;
+        border-radius: 10px !important;
+        box-shadow: 0px 4px 12px rgba(204, 0, 0, 0.3) !important;
+        padding: 4px !important;
+    }
+
+    /* Rimuove lo sfondo grigio dai contenitori interni di Streamlit */
+    .stTextInput div[data-baseweb="input"] * {
+        background-color: transparent !important;
+    }
+
+    /* Testo inserito dall'utente */
+    .stTextInput input {
         font-size: 18px !important;
         font-weight: 600 !important;
-        color: #111111 !important;
-        background-color: #ffffff !important;
     }
 
+    /* Testo dell'etichetta sopra la barra */
     .stTextInput label p {
         font-size: 18px !important;
         font-weight: bold !important;
