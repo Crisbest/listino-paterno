@@ -163,8 +163,10 @@ def pulisci_prezzo(valore):
 
 @st.cache_data(ttl=300)
 def load_data():
-    df = pd.read_csv(GOOGLE_SHEET_CSV_URL)
-    df['Codice Articolo'] = df['Codice Articolo'].astype(str).str.strip()
+    df = pd.read_csv(GOOGLE_SHEET_CSV_URL, dtype={'Codice Articolo': str})
+    
+    # Mantiene il codice articolo come testo esatto senza alterare spazi o zeri
+    df['Codice Articolo'] = df['Codice Articolo'].fillna("").astype(str).str.strip()
     
     # Applica la pulizia di sicurezza su tutta la colonna dei prezzi
     df['Prezzo (€)'] = df['Prezzo (€)'].apply(pulisci_prezzo)
