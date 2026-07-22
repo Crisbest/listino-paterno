@@ -65,9 +65,29 @@ css_code += """
         margin-bottom: 30px;
     }
     
-    .stAlert, .stSelectbox, .stTextInput, .stNumberInput {
+    .stAlert, .stSelectbox, .stNumberInput {
         background-color: rgba(255, 255, 255, 0.95) !important;
         border-radius: 8px;
+    }
+    
+    /* MODIFICA PER LA BARRA DI RICERCA MOLTO PIÙ EVIDENTE */
+    div[data-baseweb="input"] {
+        background-color: #ffffff !important;
+        border: 2px solid #cc0000 !important; /* Cornice rossa Würth */
+        border-radius: 10px !important;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15) !important; /* Ombra per farla risaltare */
+    }
+
+    div[data-baseweb="input"] input {
+        font-size: 18px !important; /* Testo più grande */
+        font-weight: 500 !important;
+        color: #111111 !important;
+    }
+
+    .stTextInput label p {
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #cc0000 !important; /* Etichetta "Cosa stai cercando?" in rosso e in grassetto */
     }
     
     .stAlert {
