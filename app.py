@@ -71,37 +71,40 @@ css_code += """
     }
     
     /* -------------------------------------------------------------
-       CORREZIONE DEFINITIVA PER IL BORDO ROSSO PERMANENTE
+       BARRA DI RICERCA NERA CON SCRITTE BIANCHE E BORDO ROSSO
        ------------------------------------------------------------- */
     
-    /* Blocca qualsiasi cambio di colore o bordo gestito da Streamlit */
-    div[class*="stTextInput"] div[data-baseweb="input"],
-    div[class*="stTextInput"] div[data-baseweb="input"]:focus-within,
-    div[class*="stTextInput"] div[data-baseweb="input"]:hover,
-    div[class*="stTextInput"] div[data-baseweb="base-input"] {
-        background-color: #ffffff !important;
-        background: #ffffff !important;
-        border: 3px solid #cc0000 !important;
+    /* Sfondo nero, testo bianco e bordo rosso per il contenitore */
+    [data-testid="stTextInput"] > div > div,
+    [data-testid="stTextInput"] div[data-baseweb="input"],
+    [data-testid="stTextInput"] div[data-baseweb="base-input"] {
+        background-color: #111111 !important;
+        background: #111111 !important;
+        border: 2px solid #cc0000 !important;
         border-radius: 10px !important;
-        box-shadow: 0px 4px 12px rgba(204, 0, 0, 0.25) !important;
-        transition: none !important; /* Impedisce al browser di far sparire il bordo */
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4) !important;
     }
 
-    /* Rimuove completamente lo sfondo grigio da tutti gli elementi interni */
-    div[class*="stTextInput"] div[data-baseweb="input"] * {
+    /* Imposta lo sfondo nero su tutti gli elementi interni */
+    [data-testid="stTextInput"] * {
         background-color: transparent !important;
-        background: transparent !important;
     }
 
-    /* Stile del testo digitato */
-    div[class*="stTextInput"] input {
+    /* Campo di testo digitato: colore bianco e ben visibile */
+    [data-testid="stTextInput"] input {
+        background-color: #111111 !important;
+        color: #ffffff !important;
         font-size: 18px !important;
         font-weight: 600 !important;
-        color: #111111 !important;
     }
 
-    /* Testo dell'etichetta sopra la barra */
-    .stTextInput label p {
+    /* Colore del testo segnaposto (quando la barra è vuota) */
+    [data-testid="stTextInput"] input::placeholder {
+        color: #bbbbbb !important;
+    }
+
+    /* Etichetta sopra la barra ("Cosa stai cercando?") */
+    [data-testid="stTextInput"] label p {
         font-size: 18px !important;
         font-weight: bold !important;
         color: #cc0000 !important;
@@ -111,6 +114,23 @@ css_code += """
         border-left: 5px solid #cc0000;
     }
     </style>
+
+    <!-- TRUCCO JAVASCRIPT PER MANTENERE IL NERO E BIANCO PERMANENTE -->
+    <script>
+    const fixSearchBarDark = () => {
+        const inputs = parent.document.querySelectorAll('[data-testid="stTextInput"] div[data-baseweb="input"]');
+        inputs.forEach(el => {
+            el.style.setProperty('background-color', '#111111', 'important');
+            el.style.setProperty('border', '2px solid #cc0000', 'important');
+            el.style.setProperty('border-radius', '10px', 'important');
+        });
+        const textInputs = parent.document.querySelectorAll('[data-testid="stTextInput"] input');
+        textInputs.forEach(el => {
+            el.style.setProperty('color', '#ffffff', 'important');
+        });
+    };
+    setInterval(fixSearchBarDark, 300);
+    </script>
 """
 st.markdown(css_code, unsafe_allow_html=True)
 
