@@ -71,35 +71,33 @@ css_code += """
     }
     
     /* -------------------------------------------------------------
-       FORCE COMPLETO BARRA DI RICERCA: SFONDO BIANCO E BORDO ROSSO
+       CORREZIONE DEFINITIVA PER IL BORDO ROSSO PERMANENTE
        ------------------------------------------------------------- */
     
-    /* Seleziona l'intero blocco del campo testo */
-    .stTextInput div[data-baseweb="input"],
-    .stTextInput div[data-baseweb="base-input"],
-    .stTextInput input {
+    /* Blocca qualsiasi cambio di colore o bordo gestito da Streamlit */
+    div[class*="stTextInput"] div[data-baseweb="input"],
+    div[class*="stTextInput"] div[data-baseweb="input"]:focus-within,
+    div[class*="stTextInput"] div[data-baseweb="input"]:hover,
+    div[class*="stTextInput"] div[data-baseweb="base-input"] {
         background-color: #ffffff !important;
         background: #ffffff !important;
-        color: #000000 !important;
-    }
-
-    /* Bordo rosso spesso e ben visibile */
-    .stTextInput div[data-baseweb="input"] {
         border: 3px solid #cc0000 !important;
         border-radius: 10px !important;
-        box-shadow: 0px 4px 12px rgba(204, 0, 0, 0.3) !important;
-        padding: 4px !important;
+        box-shadow: 0px 4px 12px rgba(204, 0, 0, 0.25) !important;
+        transition: none !important; /* Impedisce al browser di far sparire il bordo */
     }
 
-    /* Rimuove lo sfondo grigio dai contenitori interni di Streamlit */
-    .stTextInput div[data-baseweb="input"] * {
+    /* Rimuove completamente lo sfondo grigio da tutti gli elementi interni */
+    div[class*="stTextInput"] div[data-baseweb="input"] * {
         background-color: transparent !important;
+        background: transparent !important;
     }
 
-    /* Testo inserito dall'utente */
-    .stTextInput input {
+    /* Stile del testo digitato */
+    div[class*="stTextInput"] input {
         font-size: 18px !important;
         font-weight: 600 !important;
+        color: #111111 !important;
     }
 
     /* Testo dell'etichetta sopra la barra */
