@@ -109,7 +109,7 @@ def load_data():
     df = pd.read_csv(GOOGLE_SHEET_CSV_URL)
     df['Codice Articolo'] = df['Codice Articolo'].astype(str).str.strip()
     
-    # Applica la pulizia di sicurezza su tutta la colonna dei prezzi (CORRETTO CON UNA SOLA 'I')
+    # Applica la pulizia di sicurezza su tutta la colonna dei prezzi
     df['Prezzo (€)'] = df['Prezzo (€)'].apply(pulisci_prezzo)
     
     if 'Parole Chiave' not in df.columns:
@@ -127,15 +127,25 @@ except Exception as e:
 if 'carrello' not in st.session_state:
     st.session_state.carrello = []
 
-# 6. INTERFACCIA DI RICERCA
-search_query = st.text_input("🔍 Cosa stai cercando? (Inserisci codice, descrizione o nome comune come 'turbovite'):", "").strip().lower()
+# 6. INTERFACCIA DI RICERCA AVANZATA
+search_query = st.text_input("🔍 Cosa stai cercando? (Inserisci codice, descrizione o nomi come 'vite 8x200'):", "").strip()
 
 if search_query:
-    risultati = df_prodotti[
-        df_prodotti['Codice Articolo'].str.lower().str.contains(search_query) | 
-        df_prodotti['Descrizione'].str.lower().str.contains(search_query) |
-        df_prodotti['Parole Chiave'].str.lower().str.contains(search_query)
-    ]
+    # 1. Uniforma le misure: converte "8 x 200" o "8 X 200" in "8x200"
+    query_pulita = re.sub(r'(\d+)\s*[xX]\s*(\d+)', r'\1x\2', search_query.lower())
+    
+    # 2. Separa le singole parole digitate dal cliente
+    parole_da_cercare = query_pulita.split()
+    
+    # 3. Filtra: l'articolo deve contenere TUTTE le parole cercate (in Codice, Descrizione O Parole Chiave)
+    risultati = df_prodotti.copy()
+    
+    for parola in parole_da_cercare:
+        risultati = risultati[
+            risultati['Codice Articolo'].str.lower().str.contains(parola, na=False) | 
+            risultati['Descrizione'].str.lower().str.contains(parola, na=False) |
+            risultati['Parole Chiave'].str.lower().str.contains(parola, na=False)
+        ]
     
     if not risultati.empty:
         opzioni = risultati.apply(lambda r: f"{r['Codice Articolo']} - {r['Descrizione']}", axis=1).tolist()
@@ -200,7 +210,7 @@ if st.session_state.carrello:
             st.session_state.carrello = []
             st.rerun()
             
-    # GENERATORE PDF CORRETTO (SENZA CARATTERI SPECIALI CHE MANDANO IN CRASH)
+    # GENERATORE PDF CORRETTO
     def genera_pdf(carrello, totale):
         pdf = FPDF()
         pdf.add_page()
@@ -225,9 +235,7 @@ if st.session_state.carrello:
         pdf.set_font("Arial", "", 10)
         pdf.set_text_color(0, 0, 0)
         for item in carrello:
-            # Puliamo la descrizione tagliandola se troppo lunga
             desc = str(item['Descrizione'])[:45]
-            # Estraggo solo il numero del prezzo senza il simbolo €
             prezzo_singolo = str(item['Prezzo Listino']).split(" ")[0]
             
             pdf.cell(30, 8, str(item['Codice']), border=1)
@@ -242,7 +250,6 @@ if st.session_state.carrello:
         pdf.set_fill_color(230, 230, 230)
         pdf.cell(50, 10, f"Totale: {totale:.2f} EUR", border=1, align="C", ln=True, fill=True)
         
-        # Usiamo l'encoding corretto per l'output di testo
         return pdf.output(dest="S").encode('latin1', errors='replace')
 
     with col_pdf:
