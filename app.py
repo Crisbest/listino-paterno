@@ -190,15 +190,12 @@ if 'carrello' not in st.session_state:
 search_query = st.text_input("🔍 Cosa stai cercando? (Inserisci codice, descrizione o nomi come 'vite 8x200'):", "").strip()
 
 if search_query:
-    # 1. Uniforma le misure: converte "8 x 200" o "8 X 200" in "8x200"
+    # 1. Uniforma le misure (es. "8 x 200" -> "8x200")
     query_pulita = re.sub(r'(\d+)\s*[xX]\s*(\d+)', r'\1x\2', search_query.lower())
-    
-    # 2. Separa le singole parole digitate dal cliente
     parole_da_cercare = query_pulita.split()
     
-    # 3. Filtra: l'articolo deve contenere TUTTE le parole cercate (in Codice, Descrizione O Parole Chiave)
+    # 2. Filtra gli articoli
     risultati = df_prodotti.copy()
-    
     for parola in parole_da_cercare:
         risultati = risultati[
             risultati['Codice Articolo'].str.lower().str.contains(parola, na=False) | 
@@ -213,41 +210,49 @@ if search_query:
         codice_sel = scelta.split(" - ")[0]
         prodotto = risultati[risultati['Codice Articolo'] == codice_sel].iloc[0]
         
-        st.info(f"**Articolo:** {prodotto['Descrizione']}")
-        if prodotto['Parole Chiave']:
-            st.caption(f"*(Nomi commerciali associati: {prodotto['Parole Chiave']})*")
+        st.write("---")
+        
+        # COLONNA FOTO A SINISTRA, DETTAGLI A DESTRA
+        col_foto, col_info = st.columns([1, 2])
+        
+        with col_foto:
+            url_foto = prodotto.get('Immagine', '')
+            if pd.notna(url_foto) and str(url_foto).strip().startswith('http'):
+                st.image(str(url_foto).strip(), use_container_width=True)
+            else:
+                st.info("📷 Foto non disponibile")
+                
+        with col_info:
+            st.markdown(f"### **{prodotto['Descrizione']}**")
+            if prodotto['Parole Chiave']:
+                st.caption(f"*(Nomi commerciali: {prodotto['Parole Chiave']})*")
+                
+            st.write(f"**Prezzo di listino:** {prodotto['Prezzo (€)']} € ({prodotto['Unità Prezzo']})")
             
-        st.write(f"**Prezzo di listino:** {prodotto['Prezzo (€)']} € ({prodotto['Unità Prezzo']})")
-        
-        # Recupera la quantità minima per confezione (usa 1 se vuota)
-        q_minima = int(prodotto['Quantità Minima']) if 'Quantità Minima' in prodotto and pd.notna(prodotto['Quantità Minima']) else 1
-        
-        st.warning(f"📦 **Confezionamento:** Questo articolo viene venduto solo in confezioni da **{q_minima} pezzi**.")
-        
-        # L'utente seleziona quante confezioni desidera
-        confezioni = st.number_input("Inserisci il numero di confezioni da ordinare:", min_value=1, value=1, step=1)
-        
-        # Calcolo automatico dei pezzi singoli effettivi
-        quantita_effettiva = confezioni * q_minima
-        st.info(f"🔢 **Quantità totale che verrà ordinata:** {quantita_effettiva} pezzi singoli")
-        
-        is_per_100 = "100" in str(prodotto['Unità Prezzo'])
-        if is_per_100:
-            prezzo_totale = (prodotto['Prezzo (€)'] / 100) * quantita_effettiva
-            st.success(f"💰 **Prezzo Totale:** {prezzo_totale:.2f} € *(Calcolato su base 100 pz)*")
-        else:
-            prezzo_totale = prodotto['Prezzo (€)'] * quantita_effettiva
+            q_minima = int(prodotto['Quantità Minima']) if 'Quantità Minima' in prodotto and pd.notna(prodotto['Quantità Minima']) else 1
+            st.warning(f"📦 Confezionamento: **{q_minima} pezzi**.")
+            
+            confezioni = st.number_input("Numero di confezioni:", min_value=1, value=1, step=1)
+            quantita_effettiva = confezioni * q_minima
+            st.info(f"🔢 Quantità totale: **{quantita_effettiva} pezzi**")
+            
+            is_per_100 = "100" in str(prodotto['Unità Prezzo'])
+            if is_per_100:
+                prezzo_totale = (prodotto['Prezzo (€)'] / 100) * quantita_effettiva
+            else:
+                prezzo_totale = prodotto['Prezzo (€)'] * quantita_effettiva
+                
             st.success(f"💰 **Prezzo Totale:** {prezzo_totale:.2f} €")
             
-        if st.button("🛒 Aggiungi all'ordine"):
-            st.session_state.carrello.append({
-                "Codice": prodotto['Codice Articolo'],
-                "Descrizione": prodotto['Descrizione'],
-                "Prezzo Listino": f"{prodotto['Prezzo (€)']} € / {prodotto['Unità Prezzo']}",
-                "Quantità": quantita_effettiva,
-                "Totale (€)": round(prezzo_totale, 2)
-            })
-            st.toast("Aggiunto al riepilogo!")
+            if st.button("🛒 Aggiungi all'ordine"):
+                st.session_state.carrello.append({
+                    "Codice": prodotto['Codice Articolo'],
+                    "Descrizione": prodotto['Descrizione'],
+                    "Prezzo Listino": f"{prodotto['Prezzo (€)']} € / {prodotto['Unità Prezzo']}",
+                    "Quantità": quantita_effettiva,
+                    "Totale (€)": round(prezzo_totale, 2)
+                })
+                st.toast("Aggiunto al riepilogo!")
     else:
         st.warning("Nessun articolo trovato. Modifica il termine di ricerca.")
 
